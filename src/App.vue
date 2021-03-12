@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png" />
+    <img class="topLogo" alt="logo" src="@/assets/starwars/starwars.png" />
     <PhotoSheet />
   </div>
 </template>
@@ -25,5 +25,10 @@ export default Vue.extend({
   text-align: center;
   color: #2c3e50;
   margin-top: 60px;
+}
+
+.topLogo {
+  width: 120px;
+  height: 80px;
 }
 </style>
