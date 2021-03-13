@@ -59,7 +59,7 @@ export default Vue.extend({
         addRemoveLinks: true,
         headers: {
           Authorization:
-            "Bearer ",
+            "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNjE1NTkyOTAzLCJleHAiOjE2MTgxODQ5MDN9.oHK5uTEPNN7ncMHPOGl2lGPMprfLmV0tN50LDaz-vIw",
           "Cache-Control": "",
           "X-Requested-With": ""
         }
