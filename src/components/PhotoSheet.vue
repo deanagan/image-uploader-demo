@@ -3,12 +3,8 @@
     <div class="container">
       <div class="imageBox">
         <vue-drop-zone
-          @vdropzone-complete="response => onDropComplete(response)"
-          @vdropzone-error="(file, msg, xhr) => onDropError(file, msg, xhr)"
-          @vdropzone-queue-complete="() => onFileQueued()"
-          @vdropzone-file-added="file => onFileAdded(file)"
-          @vdropzone-success="
-            (file, response) => onClickDropZone(file, response)
+          @vdropzone-error="
+            (file, msg, xhr) => onDropZone1Error(file, msg, xhr)
           "
           ref="dropzone1"
           id="dropzone1"
@@ -16,7 +12,6 @@
           :useCustomSlot="true"
         >
         </vue-drop-zone>
-        <p v-show="hasError">{{ errorMsg }}</p>
       </div>
       <div class="imageBox">
         <img :src="image2" alt="Image 2" />
@@ -25,10 +20,10 @@
         <img :src="image3" alt="Image 3" />
       </div>
       <div class="imageBox">
-        <img :src="image4" />
+        <submit-form />
       </div>
     </div>
-    <button @click="submitImages()">Submit</button>
+    <!-- <button class="submitButton" @click="onSubmitImages()">Submit</button> -->
   </div>
 </template>
 
@@ -36,10 +31,11 @@
 import Vue from "vue";
 import vue2Dropzone from "vue2-dropzone/dist/vue2Dropzone";
 import "vue2-dropzone/dist/vue2Dropzone.min.css";
+import SubmitForm from "@/components/SubmitForm.vue";
 
 export default Vue.extend({
   name: "PhotoSheet",
-  components: { vueDropZone: vue2Dropzone },
+  components: { vueDropZone: vue2Dropzone, SubmitForm: SubmitForm },
   data: () => {
     return {
       image1: require("@/assets/starwars/yoda.png"),
@@ -49,9 +45,10 @@ export default Vue.extend({
       hasError: false,
       errorMsg: "",
       dropZoneOptions: {
-        // url: "http://localhost:1337/upload",
-        url: "https://httpbin.org/post",
+        url: "http://localhost:1337/Meals/image",
+        // url: "https://httpbin.org/post",
         thumbnailWidth: 350,
+        thumbnailHeight: 250,
         thumbnailMethod: "contain",
         maxFilesize: 0.5,
         paramName: "files",
@@ -61,7 +58,8 @@ export default Vue.extend({
         parallelUploads: 3,
         addRemoveLinks: true,
         headers: {
-          Authorization: "Bearer tbd",
+          Authorization:
+            "Bearer ",
           "Cache-Control": "",
           "X-Requested-With": ""
         }
@@ -72,38 +70,14 @@ export default Vue.extend({
     getDropzoneInstance() {
       return this.$refs.dropzone1 as InstanceType<typeof vue2Dropzone>;
     },
-    submitImages() {
+    onSubmitImages() {
       const dropzone = this.getDropzoneInstance();
       dropzone.processQueue();
     },
-    onDropError(file: File, msg: string, xhr: XMLHttpRequest) {
+    onDropZone1Error(file: File, msg: string, xhr: XMLHttpRequest) {
       console.log(file, msg, xhr);
       this.hasError = true;
       this.errorMsg = msg;
-    },
-    onDropComplete(response: string) {
-      console.log(response);
-    },
-    onFileQueued() {
-      console.log("File Queued");
-    },
-    onFileAdded(file: File) {
-      console.log(file);
-      const dropzone = this.getDropzoneInstance();
-      const acceptedFiles = dropzone.getAcceptedFiles();
-      if (this.hasError) {
-        const rejectedFiles = dropzone.getRejectedFiles();
-        dropzone.removeFile(rejectedFiles[0]);
-      }
-      this.hasError = false;
-
-      if (acceptedFiles.length > 0) {
-        //this.lastFile = acceptedFiles[0];
-        dropzone.removeFile(acceptedFiles[0]);
-      }
-    },
-    onClickDropZone(file: File, response: Response) {
-      console.log(file, response);
     }
   }
 });
@@ -114,7 +88,7 @@ export default Vue.extend({
 .container {
   display: flex;
   flex-wrap: wrap;
-  height: 600px;
+  height: 720px;
   width: 1000px;
   text-align: center;
   margin-left: calc((100% - 1000px) / 2);
@@ -159,5 +133,9 @@ export default Vue.extend({
 
 .subtitle {
   color: #314b5f;
+}
+
+.submitButton {
+  margin-top: 20px;
 }
 </style>
