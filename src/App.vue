@@ -1,18 +1,18 @@
 <template>
   <div id="app">
     <img class="topLogo" alt="logo" src="@/assets/starwars/starwars.png" />
-    <PhotoSheet />
+    <CharacterForm />
   </div>
 </template>
 
 <script lang="ts">
 import Vue from "vue";
-import PhotoSheet from "@/components/PhotoSheet.vue";
+import CharacterForm from "@/components/CharacterForm.vue";
 
 export default Vue.extend({
   name: "App",
   components: {
-    PhotoSheet
+    CharacterForm
   }
 });
 </script>
