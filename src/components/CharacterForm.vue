@@ -65,14 +65,13 @@ interface FileStatus {
   status: string;
 }
 
-
 import Vue from "vue";
 import vue2Dropzone from "vue2-dropzone/dist/vue2Dropzone";
 import "vue2-dropzone/dist/vue2Dropzone.min.css";
 import axios from "axios";
 
 export default Vue.extend({
-  name: "PhotoSheet",
+  name: "CharacterForm",
   components: { vueDropZone: vue2Dropzone },
   data: () => {
     return {
