@@ -3,11 +3,13 @@
     <div class="container">
       <div class="imageBox">
         <vue-drop-zone
-          @vdropzone-error="onDropZone1Error"
-          @vdropzone-success="onImageUploadSuccess"
+          @vdropzone-error="onDropZoneError"
+          @vdropzone-success="
+            (file, response) => onImageUploadSuccess(1, file, response)
+          "
           ref="dropzone1"
           id="dropzone1"
-          :options="dropZoneOptions"
+          :options="dropZone1Options"
           :useCustomSlot="true"
         >
           <div class="dz-message" data-dz-message>
@@ -15,13 +17,43 @@
             <span>Drop image here to upload.</span>
           </div>
         </vue-drop-zone>
-        <p v-show="hasError">{{ errorMsg }}</p>
+        <p>Lead Character</p>
       </div>
       <div class="imageBox">
-        <img :src="image2" alt="Image 2" />
+        <vue-drop-zone
+          @vdropzone-error="onDropZoneError"
+          @vdropzone-success="
+            (file, response) => onImageUploadSuccess(2, file, response)
+          "
+          ref="dropzone2"
+          id="dropzone2"
+          :options="dropZone2Options"
+          :useCustomSlot="true"
+        >
+          <div class="dz-message" data-dz-message>
+            <!-- We need set useCustomSlot=true for message below to take effect. -->
+            <span>Drop image here to upload.</span>
+          </div>
+        </vue-drop-zone>
+        <p class="imageLabel">Support Character</p>
       </div>
       <div class="imageBox">
-        <img :src="image3" alt="Image 3" />
+        <vue-drop-zone
+          @vdropzone-error="onDropZoneError"
+          @vdropzone-success="
+            (file, response) => onImageUploadSuccess(3, file, response)
+          "
+          ref="dropzone3"
+          id="dropzone3"
+          :options="dropZone3Options"
+          :useCustomSlot="true"
+        >
+          <div class="dz-message" data-dz-message>
+            <!-- We need set useCustomSlot=true for message below to take effect. -->
+            <span>Drop image here to upload.</span>
+          </div>
+        </vue-drop-zone>
+        <p>Backup Character</p>
       </div>
       <div class="imageBox submit-form">
         <form class="form-entry" @submit="onSubmitForm">
@@ -79,13 +111,53 @@ export default Vue.extend({
       dateAdded: new Date().toISOString().substring(0, 10),
       isfavorite: true,
       serves: 1,
+      dropZonesToWaitOn: 0,
+      dropZonesToProcess: [],
+      droppedImageIds: [0, 0, 0],
       image1: require("@/assets/starwars/yoda.png"),
       image2: require("@/assets/starwars/r2d2.png"),
       image3: require("@/assets/starwars/darthvader.png"),
       image4: require("@/assets/starwars/bb8.png"),
-      hasError: false,
-      errorMsg: "",
-      dropZoneOptions: {
+
+      dropZone1Options: {
+        url: "http://localhost:1337/upload",
+        thumbnailWidth: 350,
+        thumbnailHeight: 250,
+        thumbnailMethod: "contain",
+        maxFilesize: 0.5,
+        paramName: "files",
+        acceptedFiles: "image/jpg, image/png, image/jpeg",
+        maxFiles: 1,
+        autoProcessQueue: false,
+        parallelUploads: 3,
+        addRemoveLinks: true,
+        headers: {
+          Authorization:
+            "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNjE1NTkyOTAzLCJleHAiOjE2MTgxODQ5MDN9.oHK5uTEPNN7ncMHPOGl2lGPMprfLmV0tN50LDaz-vIw",
+          "Cache-Control": "",
+          "X-Requested-With": ""
+        }
+      },
+      dropZone2Options: {
+        url: "http://localhost:1337/upload",
+        thumbnailWidth: 350,
+        thumbnailHeight: 250,
+        thumbnailMethod: "contain",
+        maxFilesize: 0.5,
+        paramName: "files",
+        acceptedFiles: "image/jpg, image/png, image/jpeg",
+        maxFiles: 1,
+        autoProcessQueue: false,
+        parallelUploads: 3,
+        addRemoveLinks: true,
+        headers: {
+          Authorization:
+            "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNjE1NTkyOTAzLCJleHAiOjE2MTgxODQ5MDN9.oHK5uTEPNN7ncMHPOGl2lGPMprfLmV0tN50LDaz-vIw",
+          "Cache-Control": "",
+          "X-Requested-With": ""
+        }
+      },
+      dropZone3Options: {
         url: "http://localhost:1337/upload",
         thumbnailWidth: 350,
         thumbnailHeight: 250,
@@ -106,30 +178,52 @@ export default Vue.extend({
       }
     };
   },
+  mounted() {
+    console.log("Mounted");
+  },
   methods: {
-    getDropzoneInstance() {
-      return this.$refs.dropzone1 as InstanceType<typeof vue2Dropzone>;
+    hasImageDropped(dropZone: InstanceType<typeof vue2Dropzone>) {
+      return dropZone.getQueuedFiles().length > 0;
+    },
+    processNextDropZone() {
+      const dropZoneToProcess = this.dropZonesToProcess.find(dropzone =>
+        this.hasImageDropped(dropzone)
+      ) as InstanceType<typeof vue2Dropzone>;
+      if (dropZoneToProcess) {
+        dropZoneToProcess.processQueue();
+      } else {
+        this.onAllImagesUploadSuccess();
+      }
     },
     onSubmitForm(e: Event) {
       e.preventDefault();
-      const dropzone = this.getDropzoneInstance();
-      dropzone.processQueue();
+
+      const dropzones = [
+        this.$refs.dropzone1,
+        this.$refs.dropzone2,
+        this.$refs.dropzone3
+      ];
+      Array.prototype.push.apply(this.dropZonesToProcess, dropzones);
+
+      this.dropZonesToWaitOn = dropzones.filter(dropzone =>
+        this.hasImageDropped(dropzone)
+      ).length;
+
       console.log("processing images first!");
+      this.processNextDropZone();
     },
     onImageUploadSuccess(
+      dropZoneNumber: number,
       file: FileStatus,
       responses: DropZoneUploadResponse[]
     ): void {
-      if (file.status !== "success") {
-        //TODO: Error
-        return;
-      }
-      const ids: number[] = [];
-      responses.map(resp => {
-        console.log(resp);
-        ids.push(+resp.id);
-      });
+      console.log(`Image Upload done for dropzone${dropZoneNumber}`);
+      console.log(file, responses);
 
+      this.droppedImageIds[dropZoneNumber - 1] = +responses[0].id;
+      this.processNextDropZone();
+    },
+    onAllImagesUploadSuccess(): void {
       axios
         .post(
           "http://localhost:1337/meals",
@@ -138,7 +232,9 @@ export default Vue.extend({
             Added: this.dateAdded,
             IsFavorite: this.isfavorite,
             Serves: this.serves,
-            Image: ids?.length > 0 ? ids[0] : null
+            Image: this.droppedImageIds[0] || null,
+            Image2: this.droppedImageIds[1] || null,
+            Image3: this.droppedImageIds[2] || null
           },
           {
             headers: {
@@ -154,10 +250,8 @@ export default Vue.extend({
           console.log(error);
         });
     },
-    onDropZone1Error(file: File, msg: string, xhr: XMLHttpRequest) {
+    onDropZoneError(file: File, msg: string, xhr: XMLHttpRequest) {
       console.log(file, msg, xhr);
-      this.hasError = true;
-      this.errorMsg = msg;
     }
   }
 });
@@ -191,11 +285,17 @@ export default Vue.extend({
   height: calc(100% - (4px * 2));
 }
 
-#dropzone1 {
+#dropzone1 #dropzone2 #dropzone3 {
   height: 100%;
   width: 100%;
   color: black;
   background: white;
+}
+
+.vue-dropzone {
+  border: none;
+  height: 90%;
+  width: 100%;
 }
 
 .submitButton {
