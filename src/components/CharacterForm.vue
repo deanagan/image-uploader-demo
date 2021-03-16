@@ -78,6 +78,15 @@
             <label for="serves">Total Serves:</label>
             <input id="serves" type="number" v-model="serves" required />
           </div>
+          <select v-model="selected">
+            <option
+              v-for="(option, id) in options"
+              :value="option.id"
+              :key="id"
+            >
+              {{ option.Type }}
+            </option>
+          </select>
           <button class="btn btn-lg btn-primary btn-block" type="submit">
             Submit
           </button>
@@ -91,6 +100,12 @@
 interface DropZoneUploadResponse {
   id: string | number;
   name: string;
+}
+
+interface MealType {
+  id: number | string;
+  Type: string;
+  Description: string;
 }
 
 interface FileStatus {
@@ -111,14 +126,11 @@ export default Vue.extend({
       dateAdded: new Date().toISOString().substring(0, 10),
       isfavorite: true,
       serves: 1,
+      selected: new String(),
       dropZonesToWaitOn: 0,
       dropZonesToProcess: [],
       droppedImageIds: [0, 0, 0],
-      image1: require("@/assets/starwars/yoda.png"),
-      image2: require("@/assets/starwars/r2d2.png"),
-      image3: require("@/assets/starwars/darthvader.png"),
-      image4: require("@/assets/starwars/bb8.png"),
-
+      options: new Array<MealType>(),
       dropZone1Options: {
         url: "http://localhost:1337/upload",
         thumbnailWidth: 350,
@@ -179,7 +191,21 @@ export default Vue.extend({
     };
   },
   mounted() {
-    console.log("Mounted");
+    axios
+      .get("http://localhost:1337/meal-types", {
+        headers: {
+          Authorization:
+            "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNjE0NTU4MjQyLCJleHAiOjE2MTcxNTAyNDJ9.tBj3jiL0FCy99fVsQDJUPYRKxt30rv1Ed_k_hpO1w-M"
+        }
+      })
+      .then(response => {
+        response.data.map((e: MealType) => {
+          this.options.push(e);
+        });
+      })
+      .catch((error: Error) => {
+        console.log(error);
+      });
   },
   methods: {
     hasImageDropped(dropZone: InstanceType<typeof vue2Dropzone>) {
@@ -234,7 +260,8 @@ export default Vue.extend({
             Serves: this.serves,
             Image: this.droppedImageIds[0] || null,
             Image2: this.droppedImageIds[1] || null,
-            Image3: this.droppedImageIds[2] || null
+            Image3: this.droppedImageIds[2] || null,
+            MealType: this.selected
           },
           {
             headers: {
