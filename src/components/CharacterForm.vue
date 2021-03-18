@@ -31,7 +31,6 @@
           :useCustomSlot="true"
         >
           <div class="dz-message" data-dz-message>
-            <!-- We need set useCustomSlot=true for message below to take effect. -->
             <span>Drop image here to upload.</span>
           </div>
         </vue-drop-zone>
@@ -55,8 +54,8 @@
         </vue-drop-zone>
         <p>Backup Character</p>
       </div>
-      <div class="imageBox submit-form">
-        <form class="form-entry" @submit="onSubmitForm">
+      <div class="imageBox">
+        <div class="submit-form">
           <div class="form-group">
             <label for="name">Name:</label>
             <input type="text" v-model="name" placeholder="Name" required />
@@ -78,19 +77,20 @@
             <label for="serves">Total Serves:</label>
             <input id="serves" type="number" v-model="serves" required />
           </div>
-          <select v-model="selected">
-            <option
-              v-for="(option, id) in options"
-              :value="option.id"
-              :key="id"
-            >
-              {{ option.Type }}
-            </option>
-          </select>
-          <button class="btn btn-lg btn-primary btn-block" type="submit">
-            Submit
-          </button>
-        </form>
+
+          <div class="form-group">
+            <label for="typeOfMeal">Meal Type:</label>
+            <select id="typeOfMeal" class="select" v-model="selected">
+              <option
+                v-for="(option, id) in options"
+                :value="option.id"
+                :key="id"
+              >
+                {{ option.Type }}
+              </option>
+            </select>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -221,9 +221,8 @@ export default Vue.extend({
         this.onAllImagesUploadSuccess();
       }
     },
-    onSubmitForm(e: Event) {
-      e.preventDefault();
 
+    submitForm() {
       const dropzones = [
         this.$refs.dropzone1,
         this.$refs.dropzone2,
@@ -329,10 +328,13 @@ export default Vue.extend({
   margin-top: 20px;
 }
 
-.form-entry {
-  text-align: left;
-  margin-left: 5%;
-  margin-top: 5%;
+.submit-form {
+  margin-left: 10px;
+  margin-top: 10px;
+}
+
+.select {
+  margin-left: 4px;
 }
 
 form {
