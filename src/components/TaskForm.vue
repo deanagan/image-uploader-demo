@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="container">
+    <div ref="childForm" class="container">
       <div class="imageBox">
         <vue-drop-zone
           @vdropzone-error="onDropZoneError"
@@ -17,7 +17,6 @@
             <span>Drop image here to upload.</span>
           </div>
         </vue-drop-zone>
-        <p>Lead Character</p>
       </div>
       <div class="imageBox">
         <vue-drop-zone
@@ -34,7 +33,6 @@
             <span>Drop image here to upload.</span>
           </div>
         </vue-drop-zone>
-        <p class="imageLabel">Support Character</p>
       </div>
       <div class="imageBox">
         <vue-drop-zone
@@ -52,45 +50,9 @@
             <span>Drop image here to upload.</span>
           </div>
         </vue-drop-zone>
-        <p>Backup Character</p>
       </div>
       <div class="imageBox">
-        <div class="submit-form">
-          <div class="form-group">
-            <label for="name">Name:</label>
-            <input type="text" v-model="name" placeholder="Name" required />
-          </div>
-          <div class="form-group">
-            <label for="dateAdded">Date Added:</label>
-            <input type="date" id="dateAdded" v-model="dateAdded" required />
-          </div>
-          <div class="form-group">
-            <label for="isfavorite">Is Favorite?:</label>
-            <input
-              type="checkbox"
-              id="isfavorite"
-              v-model="isfavorite"
-              value="true"
-            />
-          </div>
-          <div class="form-group">
-            <label for="serves">Total Serves:</label>
-            <input id="serves" type="number" v-model="serves" required />
-          </div>
-
-          <div class="form-group">
-            <label for="typeOfMeal">Meal Type:</label>
-            <select id="typeOfMeal" class="select" v-model="selected">
-              <option
-                v-for="(option, id) in options"
-                :value="option.id"
-                :key="id"
-              >
-                {{ option.Type }}
-              </option>
-            </select>
-          </div>
-        </div>
+        <!-- <TaskDetailForm :options="options" /> -->
       </div>
     </div>
   </div>
@@ -102,13 +64,7 @@ interface DropZoneUploadResponse {
   name: string;
 }
 
-interface MealType {
-  id: number | string;
-  Type: string;
-  Description: string;
-}
-
-interface FileStatus {
+interface FileDetail {
   status: string;
 }
 
@@ -116,97 +72,63 @@ import Vue from "vue";
 import vue2Dropzone from "vue2-dropzone/dist/vue2Dropzone";
 import "vue2-dropzone/dist/vue2Dropzone.min.css";
 import axios from "axios";
+import { TaskType } from "@/interfaces/task-type";
+// import TaskDetailForm from "@/components/TaskDetailForm.vue";
+
+const dropZoneOptions = Object.freeze({
+  url: "http://localhost:1337/upload",
+  thumbnailWidth: 350,
+  thumbnailHeight: 250,
+  thumbnailMethod: "contain",
+  maxFilesize: 0.5,
+  paramName: "files",
+  acceptedFiles: "image/jpg, image/png, image/jpeg",
+  maxFiles: 1,
+  autoProcessQueue: false,
+  parallelUploads: 3,
+  addRemoveLinks: true,
+  headers: {
+    Authorization:
+      "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNjE1NTkyOTAzLCJleHAiOjE2MTgxODQ5MDN9.oHK5uTEPNN7ncMHPOGl2lGPMprfLmV0tN50LDaz-vIw",
+    "Cache-Control": "",
+    "X-Requested-With": ""
+  }
+});
 
 export default Vue.extend({
-  name: "CharacterForm",
-  components: { vueDropZone: vue2Dropzone },
+  name: "TaskForm",
+  components: {
+    vueDropZone: vue2Dropzone
+    // TaskDetailForm: TaskDetailForm
+  },
+  props: ["tasks"],
+  watch: {
+    tasks: function(o, n) {
+      // eslint-disable-next-line prettier/prettier
+      console.log("tasks updated!");
+      console.log(o, n);
+
+      const file = { size: 514.12, name: "bb8.png", type: "image/png" };
+      const url = "http://localhost:1337/uploads/bb8_115fc666a4.png";
+
+      (this.$refs.dropzone3 as InstanceType<
+        typeof vue2Dropzone
+      >).manuallyAddFile(file, url);
+    }
+  },
   data: () => {
     return {
       name: "Enter Name",
-      dateAdded: new Date().toISOString().substring(0, 10),
-      isfavorite: true,
-      serves: 1,
-      selected: new String(),
       dropZonesToWaitOn: 0,
       dropZonesToProcess: [],
       droppedImageIds: [0, 0, 0],
-      options: new Array<MealType>(),
-      dropZone1Options: {
-        url: "http://localhost:1337/upload",
-        thumbnailWidth: 350,
-        thumbnailHeight: 250,
-        thumbnailMethod: "contain",
-        maxFilesize: 0.5,
-        paramName: "files",
-        acceptedFiles: "image/jpg, image/png, image/jpeg",
-        maxFiles: 1,
-        autoProcessQueue: false,
-        parallelUploads: 3,
-        addRemoveLinks: true,
-        headers: {
-          Authorization:
-            "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNjE1NTkyOTAzLCJleHAiOjE2MTgxODQ5MDN9.oHK5uTEPNN7ncMHPOGl2lGPMprfLmV0tN50LDaz-vIw",
-          "Cache-Control": "",
-          "X-Requested-With": ""
-        }
-      },
-      dropZone2Options: {
-        url: "http://localhost:1337/upload",
-        thumbnailWidth: 350,
-        thumbnailHeight: 250,
-        thumbnailMethod: "contain",
-        maxFilesize: 0.5,
-        paramName: "files",
-        acceptedFiles: "image/jpg, image/png, image/jpeg",
-        maxFiles: 1,
-        autoProcessQueue: false,
-        parallelUploads: 3,
-        addRemoveLinks: true,
-        headers: {
-          Authorization:
-            "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNjE1NTkyOTAzLCJleHAiOjE2MTgxODQ5MDN9.oHK5uTEPNN7ncMHPOGl2lGPMprfLmV0tN50LDaz-vIw",
-          "Cache-Control": "",
-          "X-Requested-With": ""
-        }
-      },
-      dropZone3Options: {
-        url: "http://localhost:1337/upload",
-        thumbnailWidth: 350,
-        thumbnailHeight: 250,
-        thumbnailMethod: "contain",
-        maxFilesize: 0.5,
-        paramName: "files",
-        acceptedFiles: "image/jpg, image/png, image/jpeg",
-        maxFiles: 1,
-        autoProcessQueue: false,
-        parallelUploads: 3,
-        addRemoveLinks: true,
-        headers: {
-          Authorization:
-            "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNjE1NTkyOTAzLCJleHAiOjE2MTgxODQ5MDN9.oHK5uTEPNN7ncMHPOGl2lGPMprfLmV0tN50LDaz-vIw",
-          "Cache-Control": "",
-          "X-Requested-With": ""
-        }
-      }
+      options: new Array<TaskType>(),
+      dropZone1Options: JSON.parse(JSON.stringify(dropZoneOptions)),
+      dropZone2Options: JSON.parse(JSON.stringify(dropZoneOptions)),
+      dropZone3Options: JSON.parse(JSON.stringify(dropZoneOptions))
     };
   },
-  mounted() {
-    axios
-      .get("http://localhost:1337/meal-types", {
-        headers: {
-          Authorization:
-            "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNjE0NTU4MjQyLCJleHAiOjE2MTcxNTAyNDJ9.tBj3jiL0FCy99fVsQDJUPYRKxt30rv1Ed_k_hpO1w-M"
-        }
-      })
-      .then(response => {
-        response.data.map((e: MealType) => {
-          this.options.push(e);
-        });
-      })
-      .catch((error: Error) => {
-        console.log(error);
-      });
-  },
+  // mounted() {},
   methods: {
     hasImageDropped(dropZone: InstanceType<typeof vue2Dropzone>) {
       return dropZone.getQueuedFiles().length > 0;
@@ -221,7 +143,6 @@ export default Vue.extend({
         this.onAllImagesUploadSuccess();
       }
     },
-
     submitForm() {
       const dropzones = [
         this.$refs.dropzone1,
@@ -239,7 +160,7 @@ export default Vue.extend({
     },
     onImageUploadSuccess(
       dropZoneNumber: number,
-      file: FileStatus,
+      file: FileDetail,
       responses: DropZoneUploadResponse[]
     ): void {
       console.log(`Image Upload done for dropzone${dropZoneNumber}`);
@@ -254,13 +175,10 @@ export default Vue.extend({
           "http://localhost:1337/meals",
           {
             Name: this.name,
-            Added: this.dateAdded,
-            IsFavorite: this.isfavorite,
-            Serves: this.serves,
             Image: this.droppedImageIds[0] || null,
             Image2: this.droppedImageIds[1] || null,
             Image3: this.droppedImageIds[2] || null,
-            MealType: this.selected
+            Date: "03-03-2020"
           },
           {
             headers: {

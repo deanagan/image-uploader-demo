@@ -1,18 +1,18 @@
 <template>
   <div id="app">
     <img class="topLogo" alt="logo" src="@/assets/starwars/starwars.png" />
-    <character-submission />
+    <task-submission />
   </div>
 </template>
 
 <script lang="ts">
 import Vue from "vue";
-import CharacterSubmission from "./components/CharacterSubmission.vue";
+import TaskSubmission from "./components/TaskSubmission.vue";
 
 export default Vue.extend({
   name: "App",
   components: {
-    CharacterSubmission
+    TaskSubmission
   }
 });
 </script>
