@@ -1,29 +1,32 @@
 <template>
   <div class="hello">
     <h1>{{ msg }}</h1>
-   <b-container fluid>
-  <b-row class="my-1">
-    <b-col sm="3">
-      <label for="name">Name:</label>
-    </b-col>
-    <b-col sm="9">
-      <b-form-input id="name" v-model="data.name"></b-form-input>
-    </b-col>
-  </b-row>
 
-  <b-row class="my-1">
-    <b-col sm="3">
-      <label for="number">Number:</label>
-    </b-col>
-    <b-col sm="9">
-      <b-form-input id="number" v-model="data.number"></b-form-input>
-    </b-col>
-  </b-row>
+    <b-form @submit="onSubmit" @reset="onReset" v-if="show">
+      <b-form-group>
+        <b-container fluid>
+          <b-row class="my-1">
+            <b-col sm="3">
+              <label for="name">Name:</label>
+            </b-col>
+            <b-col sm="9">
+              <b-form-input id="name" v-model="data.name"></b-form-input>
+            </b-col>
+          </b-row>
 
-</b-container>
-
-
-
+          <b-row class="my-1">
+            <b-col sm="3">
+              <label for="number">Number:</label>
+            </b-col>
+            <b-col sm="9">
+              <b-form-input id="number" v-model="data.number"></b-form-input>
+            </b-col>
+          </b-row>
+        </b-container>
+      </b-form-group>
+      <b-button type="submit" variant="primary">Submit</b-button>
+      <b-button type="reset" variant="danger">Reset</b-button>
+    </b-form>
   </div>
 </template>
 
@@ -36,8 +39,27 @@ export default {
   },
   data: function() {
     return {
-      data: { ...this.content }
+      data: { ...this.content },
+      show: true
     };
+  },
+  methods: {
+      onSubmit(event) {
+        event.preventDefault()
+        alert(JSON.stringify(this.data))
+      },
+      onReset(event) {
+        event.preventDefault();
+        // Reset our form values
+        this.data.name = '';
+        this.data.number = '';
+
+        // Trick to reset/clear native browser form validation state
+        this.show = false
+        this.$nextTick(() => {
+          this.show = true
+        })
+      }
   }
 }
 </script>
